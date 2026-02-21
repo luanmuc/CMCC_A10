@@ -1,39 +1,55 @@
-name: Compile CMCC_A10 Firmware
+name: Build CMCC A10 Firmware
 
 on:
   push:
     branches:
       - main
-    paths:
-      - '.config'
-      - 'diy-part1.sh'
-      - 'diy-part2.sh'
-      - '.github/workflows/build.yml'
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
-    inputs:
-      ssh:
-        description: 'SSH connection to Actions'
-        required: false
-        default: 'false'
 
-env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt.git
-  REPO_BRANCH: openwrt-21.02
-  FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: .config
-  DIY_P1_SH: diy-part1.sh
-  DIY_P2_SH: diy-part2.sh
-  UPLOAD_BIN_DIR: false
-  UPLOAD_FIRMWARE: true
-  UPLOAD_COWTRANSFER: false
-  UPLOAD_WETRANSFER: false
-  UPLOAD_RELEASE: true
-  TZ: Asia/Shanghai
+permissions:
+  contents: write  # 关键：给 GITHUB_TOKEN 发布权限
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update and install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib gettext git libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget
+
+      - name: Update feeds
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Download and prepare config
+        run: |
+          wget -O .config https://raw.githubusercontent.com/luanmuc/CMCC_A10/main/.config
+          make defconfig
+
+      - name: Build firmware
+        run: |
+          make -j$(nproc)
+
+      - name: Generate release tag
+        id: tag
+        run: |
+          echo "tag=CMCC_A10_$(date +%Y.%m.%d-%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Upload firmware to release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: "CMCC A10 固件 ${{ steps.tag.outputs.tag }}"
+          body: "自动构建的 CMCC A10 固件"
+          files: |
+            ./bin/targets/mediatek/mediatek7981/*.bin
+            ./bin/targets/mediatek/mediatek7981/*.img
   build:
     runs-on: ubuntu-22.04
 
