@@ -34,7 +34,7 @@ EOF
 chmod +x package/base-files/files/etc/rc.local
 
 #=============================
-# CMCC A10 正确双频 WiFi（已修复）
+# CMCC A10 正确双频 WiFi（237源码专用）
 #=============================
 cat > package/base-files/files/etc/config/wireless <<EOF
 config wifi-device 'radio0'
@@ -103,32 +103,118 @@ EOF
 chmod +x package/base-files/files/etc/uci-defaults/99-theme
 
 #=============================
-# 全局美化 CSS
+# 全局美化 CSS（最终高级版）
 #=============================
 WWW_CSS_DIR="package/base-files/files/www/luci-static/argon/css"
 mkdir -p $WWW_CSS_DIR
 cat > $WWW_CSS_DIR/cust-style.css <<EOF
-.card,.main-card,.td-card,.panel {
-    border-radius:16px !important;
-    box-shadow:0 8px 20px rgba(0,0,0,0.08) !important;
-    border:none !important;
-    overflow:hidden !important;
-    margin-bottom:20px !important;
+/* 全局卡片：柔和、高级、无边框 */
+.card,
+.main-card,
+.td-card,
+.panel,
+.table,
+.table-responsive {
+    border-radius: 18px !important;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.06) !important;
+    border: none !important;
+    overflow: hidden !important;
+    background: #fff !important;
+    margin-bottom: 16px !important;
 }
-.page-title {
-    font-size:22px !important;
-    font-weight:700 !important;
-    color:#222 !important;
-    margin-bottom:15px !important;
+.darkmode .card,
+.darkmode .panel {
+    background: #1e1e1e !important;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.2) !important;
 }
-.btn{border-radius:12px !important;border:0 !important;font-weight:600 !important;padding:7px 18px !important;transition:0.2s !important;}
-.btn-primary{background:linear-gradient(135deg,#3B82F6 0%,#60A5FA 100%) !important;}
-.btn-success{background:linear-gradient(135deg,#10B981 0%,#34D399 100%) !important;}
-.btn-danger{background:linear-gradient(135deg,#EF4444 0%,#F87171 100%) !important;}
-.form-control,.form-select{border-radius:12px !important;border:1px solid #E5E7EB !important;padding:8px 12px !important;}
-.form-switch .form-check-input{border-radius:20px !important;height:22px !important;width:40px !important;}
-.alert{border-radius:14px !important;border:none !important;}
-.main-left .nav-item i{margin-right:8px !important;width:16px !important;text-align:center !important;}
+
+/* 标题更精致、不突兀 */
+.page-title,
+h1, h2, h3, h4, .card-title {
+    font-weight: 600 !important;
+    letter-spacing: 0.2px !important;
+    color: #222 !important;
+    margin-bottom: 12px !important;
+}
+.darkmode .page-title,
+.darkmode h1, .darkmode h2, .darkmode h3 {
+    color: #eee !important;
+}
+
+/* 按钮：渐变+圆角+微动效 */
+.btn {
+    border-radius: 12px !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    border: none !important;
+    transition: all 0.25s ease !important;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #3B82F6, #60A5FA) !important;
+}
+.btn-success {
+    background: linear-gradient(135deg, #10B981, #34D399) !important;
+}
+.btn-danger {
+    background: linear-gradient(135deg, #EF4444, #F87171) !important;
+}
+.btn-warning {
+    background: linear-gradient(135deg, #F59E0B, #FBBF24) !important;
+}
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* 输入框、下拉框更圆润 */
+.form-control,
+.form-select {
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 8px 12px !important;
+    transition: all 0.2s !important;
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: #3B82F6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important;
+}
+
+/* 提示框更柔和 */
+.alert {
+    border-radius: 14px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* 左侧菜单：间距更舒服 */
+.main-left .nav-item {
+    margin-bottom: 4px !important;
+}
+.main-left .nav-link {
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+}
+.main-left .nav-item i {
+    margin-right: 8px !important;
+    width: 16px !important;
+    text-align: center !important;
+    font-size: 15px !important;
+}
+
+/* 表格清爽不拥挤 */
+.table th,
+.table td {
+    padding: 12px 14px !important;
+    vertical-align: middle !important;
+}
+
+/* 开关更精致 */
+.form-switch .form-check-input {
+    border-radius: 20px !important;
+    height: 22px !important;
+    width: 40px !important;
+}
 EOF
 
 #=============================
