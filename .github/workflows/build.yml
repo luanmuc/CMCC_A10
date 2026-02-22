@@ -1,6 +1,7 @@
 name: Build CMCC A10 (237 MT798X)
 on:
-  push: [main]
+  push:
+    branches: [ main ]
   workflow_dispatch:
 permissions:
   contents: write
@@ -9,54 +10,53 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Clean Disk
+      - name: Clean up disk space
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
           sudo docker system prune -a -f
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib gettext git \
             libncurses5-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget subversion
 
-      # 终极Git配置：彻底关闭所有认证/交互提示
-      - name: Hardened Git Config
+      - name: Configure Git
         run: |
-          git config --global user.name "Actions"
+          git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git config --global core.askpass ""
-          git config --global credential.helper "store"
-          git config --global url."https://github.com/".insteadOf git@github.com:
+          git config --global credential.modalprompt false
 
-      # 核心：用SSH协议克隆（彻底规避HTTPS认证问题）
-      - name: Clone Source (SSH)
+      - name: Clone ImmortalWrt source
         run: |
-          git clone --depth=1 git@github.com:237-dark/immortalwrt-mt798x.git openwrt
-          # 强制校验克隆结果
-          ls -la openwrt/scripts || (echo "Clone FAILED" && exit 1)
-
-      - name: Prepare Build Env
-        run: |
+          git clone --depth=1 https://github.com/237-dark/immortalwrt-mt798x.git openwrt
           cd openwrt
           cp ../.config .config
-          cp ../diy-part1.sh . && chmod +x diy-part1.sh && ./diy-part1.sh
+          cp ../diy-part1.sh . && chmod +x diy-part1.sh
           cp ../diy-part2.sh . && chmod +x diy-part2.sh
-          ./scripts/feeds update -a && ./scripts/feeds install -a
-          make defconfig && ./diy-part2.sh
 
-      - name: Build Firmware
+      - name: Update feeds and run DIY
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          ./diy-part1.sh
+          make defconfig
+          ./diy-part2.sh
+
+      - name: Download and build firmware
         run: |
           cd openwrt
           make download -j$(nproc)
           make -j$(nproc)
 
-      - name: Upload
+      - name: Upload firmware to release
         uses: softprops/action-gh-release@v2
         if: success()
         with:
