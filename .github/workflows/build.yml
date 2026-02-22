@@ -31,9 +31,10 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/immortalwrt/immortalwrt.git openwrt
           cd openwrt
+          # 安全复制，避免覆盖
           [ -f ../.config ] && cp ../.config .config
-          [ -f ../diy-part1.sh ] && cp ../diy-part1.sh .
-          [ -f ../diy-part2.sh ] && cp ../diy-part2.sh .
+          [ -f ../diy-part1.sh ] && cp ../diy-part1.sh diy-part1.sh
+          [ -f ../diy-part2.sh ] && cp ../diy-part2.sh diy-part2.sh
 
       - name: Update feeds
         run: |
@@ -41,16 +42,21 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      - name: Run DIY part1 (add feeds & packages)
+        run: |
+          cd openwrt
+          chmod +x diy-part1.sh
+          ./diy-part1.sh
+
       - name: Apply config
         run: |
           cd openwrt
           make defconfig
 
-      - name: Run DIY scripts
+      - name: Run DIY part2 (customization)
         run: |
           cd openwrt
-          chmod +x diy-part1.sh diy-part2.sh
-          ./diy-part1.sh
+          chmod +x diy-part2.sh
           ./diy-part2.sh
 
       - name: Download packages
@@ -68,9 +74,9 @@ jobs:
         if: success()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: CMCC_A10_${{ github.run_number }}
-          name: CMCC A10 游戏加速固件 2.0
-          body: 237大佬源码+TurboACC+BBR+全锥NAT+插件商店+全套美化
+          tag_name: CMCC_A10_${{ github.run_number }}_${{ github.sha }}
+          name: CMCC A10 游戏加速固件 2.0 (237大佬源码)
+          body: "基于237大佬immortalwrt源码 | TurboACC+BBR+全锥NAT+插件商店+全套美化"
           files: |
             openwrt/bin/targets/mediatek/mediatek7981/*.bin
             openwrt/bin/targets/mediatek/mediatek7981/*.itb
