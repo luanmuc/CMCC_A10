@@ -31,7 +31,6 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/immortalwrt/immortalwrt.git openwrt
           cd openwrt
-          # 安全复制，避免覆盖
           [ -f ../.config ] && cp ../.config .config
           [ -f ../diy-part1.sh ] && cp ../diy-part1.sh diy-part1.sh
           [ -f ../diy-part2.sh ] && cp ../diy-part2.sh diy-part2.sh
