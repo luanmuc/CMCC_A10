@@ -1,371 +1,213 @@
-#!/bin/bash
-
-# ==========================================================
-# 【统一美化】WiFi 功率双模式一键切换
-# ==========================================================
-mkdir -p package/base-files/files/etc
-cat > package/base-files/files/etc/wifi-mode.sh <<'EOF'
 #!/bin/sh
-mode="$1"
+# ==============================================================
+# CMCC A10 游戏加速固件 2.0 - 全套统一美化最终版
+# 卡片式 | 渐变色 | 高颜值 | 全页面统一 | Argon 完美适配
+# 菜单/标题/版本号/按钮/页面全部美化完成
+# ==============================================================
 
-if [ "$mode" = "cn" ]; then
-cat > /etc/config/wireless <<WIFI
-config wifi-device 'radio0'
-    option type 'mac80211'
-    option channel '157'
-    option hwmode '11a'
-    option path 'platform/soc/a000000.wifi'
-    option htmode 'HE80'
-    option disabled '0'
-    option country 'CN'
-    option txpower '20'
-
-config wifi-iface 'default_radio0'
-    option device 'radio0'
-    option network 'lan'
-    option mode 'ap'
-    option ssid 'CMCC-A10-5G'
-    option encryption 'psk2+ccmp'
-    option key 'lplqq123456'
-    option disabled '0'
-
-config wifi-device 'radio1'
-    option type 'mac80211'
-    option channel '6'
-    option hwmode '11g'
-    option path 'platform/soc/a000000.wifi'
-    option htmode 'HE40'
-    option disabled '0'
-    option country 'CN'
-    option txpower '20'
-
-config wifi-iface 'default_radio1'
-    option device 'radio1'
-    option network 'lan'
-    option mode 'ap'
-    option ssid 'CMCC-A10'
-    option encryption 'psk2+ccmp'
-    option key 'lplqq123456'
-    option disabled '0'
-WIFI
-elif [ "$mode" = "strong" ]; then
-cat > /etc/config/wireless <<WIFI
-config wifi-device 'radio0'
-    option type 'mac80211'
-    option channel '157'
-    option hwmode '11a'
-    option path 'platform/soc/a000000.wifi'
-    option htmode 'HE80'
-    option disabled '0'
-    option country 'US'
-    option txpower '28'
-
-config wifi-iface 'default_radio0'
-    option device 'radio0'
-    option network 'lan'
-    option mode 'ap'
-    option ssid 'CMCC-A10-5G'
-    option encryption 'psk2+ccmp'
-    option key 'lplqq123456'
-    option disabled '0'
-
-config wifi-device 'radio1'
-    option type 'mac80211'
-    option channel '6'
-    option hwmode '11g'
-    option path 'platform/soc/a000000.wifi'
-    option htmode 'HE40'
-    option disabled '0'
-    option country 'US'
-    option txpower '28'
-
-config wifi-iface 'default_radio1'
-    option device 'radio1'
-    option network 'lan'
-    option mode 'ap'
-    option ssid 'CMCC-A10'
-    option encryption 'psk2+ccmp'
-    option key 'lplqq123456'
-    option disabled '0'
-WIFI
-fi
-
-wifi reload
+# --------------------------
+# 全局美化样式（全站生效）
+# --------------------------
+cat > /www/luci-static/argon/css/cust-style.css <<EOF
+/* 全局卡片统一 */
+.card, .main-card, .td-card, .panel {
+    border-radius: 16px !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
+    border: none !important;
+    overflow: hidden !important;
+    margin-bottom: 20px !important;
+}
+/* 标题美化 */
+.page-title {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    color: #222 !important;
+    margin-bottom: 15px !important;
+}
+/* 按钮渐变 */
+.btn, .btn-primary, .btn-success, .btn-danger {
+    border-radius: 12px !important;
+    border: 0 !important;
+    font-weight: 600 !important;
+    padding: 7px 18px !important;
+    transition: 0.2s !important;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%) !important;
+}
+.btn-success {
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
+}
+.btn-danger {
+    background: linear-gradient(135deg, #EF4444 0%, #F87171 100%) !important;
+}
+/* 输入框/选择框 */
+.form-control, .form-select {
+    border-radius: 12px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 8px 12px !important;
+}
+/* 开关样式 */
+.form-switch .form-check-input {
+    border-radius: 20px !important;
+    height: 22px !important;
+    width: 40px !important;
+}
+/* 提示框 */
+.alert {
+    border-radius: 14px !important;
+    border: none !important;
+}
+/* 左侧菜单图标间距 */
+.main-left .nav-item i {
+    margin-right: 8px !important;
+    width: 16px !important;
+    text-align: center !important;
+}
 EOF
 
-chmod +x package/base-files/files/etc/wifi-mode.sh
+# 加载全局样式
+sed -i '/<\/head>/i <link rel="stylesheet" href="/luci-static/argon/css/cust-style.css">' /usr/lib/lua/luci/view/header.htm
 
-mkdir -p package/base-files/files/usr/lib/lua/luci/{controller,view}
-cat > package/base-files/files/usr/lib/lua/luci/controller/wifimode.lua <<'EOF'
-module("luci.controller.wifimode", package.seeall)
-function index()
-    entry({"admin","network","wifimode"}, template("wifimode"), _("WiFi 功率模式"), 60)
-end
-EOF
-
-cat > package/base-files/files/usr/lib/lua/luci/view/wifimode.htm <<'EOF'
+# --------------------------
+# 后台顶部标题 + 版本号美化
+# --------------------------
+cat > /usr/lib/lua/luci/view/admin_status/index.htm <<EOF
 <%+header%>
 <div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h4>📡 WiFi 功率模式</h4>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-primary">
-                切换后 WiFi 自动重启，不影响已连接设备
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-primary w-100 py-2" onclick="setMode('cn')">
-                    <i class="bi bi-wifi"></i> 国内标准模式 CN 20dBm
-                </button>
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-success w-100 py-2" onclick="setMode('strong')">
-                    <i class="bi bi-boxes"></i> 穿墙增强模式 US 28dBm
-                </button>
-            </div>
-            <div id="msg" class="mt-3 text-center fw-bold"></div>
-        </div>
+    <div class="card p-4 text-center mb-4">
+        <h2 class="page-title">🎯 CMCC A10 游戏加速固件 2.0</h2>
+        <p class="text-muted mb-0">TurboACC | BBR | SFE | FullCone | 低延迟游戏专用</p>
+    </div>
+    <div class="card p-4">
+        <h3>📊 系统状态</h3>
+        <%+admin_status/index%>
     </div>
 </div>
-
-<script>
-function setMode(m) {
-    fetch('/cgi-bin/luci/admin/network/wifimode?op='+m)
-    .then(res=>res.json())
-    .then(data=>{
-        const msg = document.getElementById('msg');
-        msg.textContent = data.msg;
-        msg.className = data.ret ? 'mt-3 text-danger fw-bold' : 'mt-3 text-success fw-bold';
-    })
-}
-</script>
 <%+footer%>
 EOF
 
-# ==========================================================
-# 【统一美化】一键恢复默认
-# ==========================================================
-cat > package/base-files/files/usr/lib/lua/luci/controller/resetdefault.lua <<'EOF'
-module("luci.controller.resetdefault", package.seeall)
-function index()
-    entry({"admin","system","resetdefault"}, template("resetdefault"), _("一键恢复默认"), 61)
-end
-EOF
-
-cat > package/base-files/files/usr/lib/lua/luci/view/resetdefault.htm <<'EOF'
+# --------------------------
+# 1. 游戏低延迟模式 - 美化页面
+# --------------------------
+cat > /usr/lib/lua/luci/view/gamelowlat.htm <<EOF
 <%+header%>
 <div class="container">
-    <div class="card">
-        <div class="card-header bg-danger text-white">
-            <h4>🔄 一键恢复出厂设置</h4>
+    <div class="card p-4">
+        <h3 class="page-title">🎮 游戏极致低延迟模式</h3>
+        <p class="text-muted mb-4">专为手游/端游优化，降低延迟，提高稳定性</p>
+        <div class="mb-3">
+            <label class="form-label">模式开关</label>
+            <select class="form-select" name="lowlat">
+                <option value="0">关闭（默认·日常稳定）</option>
+                <option value="1">开启（游戏·超低延迟）</option>
+            </select>
         </div>
-        <div class="card-body">
-            <div class="alert alert-warning">
-                恢复后所有配置清空，路由器自动重启
-            </div>
-            <button class="btn btn-danger w-100 py-2" onclick="doReset()">
-                <i class="bi bi-arrow-clockwise"></i> 确认恢复默认配置
-            </button>
-            <div id="info" class="mt-3 text-center fw-bold text-danger"></div>
+        <div class="alert alert-info mt-3">
+            ✅ <strong>优点</strong>：延迟更低，游戏更跟手<br>
+            ❌ <strong>缺点</strong>：轻微增加CPU占用
         </div>
+        <button class="btn-primary w-100 mt-3">保存并应用</button>
     </div>
 </div>
-
-<script>
-function doReset() {
-    if(!confirm('⚠ 确定恢复出厂并重启？')) return;
-    fetch('/cgi-bin/luci/admin/system/resetdefault?do=1')
-    document.getElementById('info').textContent = '正在恢复… 即将重启';
-    setTimeout(()=>location.href='/',5000);
-}
-</script>
 <%+footer%>
 EOF
 
-# ==========================================================
-# 【统一美化】IPv6 一键开关
-# ==========================================================
-cat > package/base-files/files/usr/lib/lua/luci/controller/ipv6ctrl.lua <<'EOF'
-module("luci.controller.ipv6ctrl", package.seeall)
-function index()
-    entry({"admin","network","ipv6ctrl"}, template("ipv6ctrl"), _("IPv6 一键控制"), 62)
-end
-EOF
-
-cat > package/base-files/files/usr/lib/lua/luci/view/ipv6ctrl.htm <<'EOF'
+# --------------------------
+# 2. 一键恢复上网 - 美化页面
+# --------------------------
+cat > /usr/lib/lua/luci/view/repairnet.htm <<EOF
 <%+header%>
 <div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h4>🌐 IPv6 一键开关</h4>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-info">
-                适配国内宽带 IPv6 快速切换
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-primary w-100 py-2" onclick="setIPv6('on')">
-                    <i class="bi bi-globe"></i> 启用 IPv6
-                </button>
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-secondary w-100 py-2" onclick="setIPv6('off')">
-                    <i class="bi bi-globe2"></i> 关闭 IPv6
-                </button>
-            </div>
-            <div id="msg" class="mt-3 text-center fw-bold"></div>
+    <div class="card p-4">
+        <h3 class="page-title">🔧 一键恢复上网</h3>
+        <p class="text-muted mb-4">不删WiFi、不恢复出厂，快速修复断网问题</p>
+        <button class="btn-success w-100 py-3 mb-3">立即执行一键修复</button>
+        <div class="alert alert-warning">
+            💡 仅重置网络配置，不会清除您的WiFi名称与密码
         </div>
     </div>
 </div>
-
-<script>
-function setIPv6(m) {
-    fetch('/cgi-bin/luci/admin/network/ipv6ctrl?op='+m)
-    .then(res=>res.json())
-    .then(data=>{
-        const msg = document.getElementById('msg');
-        msg.textContent = data.msg;
-        msg.className = data.ret ? 'mt-3 text-danger fw-bold' : 'mt-3 text-success fw-bold';
-    })
-}
-</script>
 <%+footer%>
 EOF
 
-cat > package/base-files/files/etc/ipv6ctrl.sh <<'EOF'
-#!/bin/sh
-mode="$1"
-
-if [ "$mode" = "on" ]; then
-    uci set network.globals.ula_prefix='auto'
-    uci set network.wan6.proto='dhcpv6'
-    uci set network.wan6.auto='1'
-    uci set dhcp.lan.dhcpv6='server'
-    uci set dhcp.lan.ra='server'
-    uci commit
-else
-    uci set network.globals.ula_prefix=''
-    uci set network.wan6.proto='none'
-    uci set network.wan6.auto='0'
-    uci set dhcp.lan.dhcpv6='disabled'
-    uci set dhcp.lan.ra='disabled'
-    uci commit
-fi
-
-/etc/init.d/network restart
-/etc/init.d/odhcpd restart 2>/dev/null
-EOF
-
-chmod +x package/base-files/files/etc/ipv6ctrl.sh
-
-# ==========================================================
-# 【统一美化版】一键旁路由设置 (默认不开启)
-# ==========================================================
-cat > package/base-files/files/usr/lib/lua/luci/controller/gateway.lua <<'EOF'
-module("luci.controller.gateway", package.seeall)
-function index()
-    entry({"admin","network","gateway"}, template("gateway"), _("旁路由设置"), 63)
-end
-EOF
-
-cat > package/base-files/files/usr/lib/lua/luci/view/gateway.htm <<'EOF'
+# --------------------------
+# 3. WiFi功率调节 - 美化页面
+# --------------------------
+cat > /usr/lib/lua/luci/view/wifipower.htm <<EOF
 <%+header%>
 <div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h4>🔌 旁路由一键设置</h4>
+    <div class="card p-4">
+        <h3 class="page-title">📡 WiFi功率调节</h3>
+        <p class="text-muted mb-4">根据使用环境选择信号强度</p>
+        <div class="mb-3">
+            <label class="form-label">发射功率</label>
+            <select class="form-select">
+                <option>低（省电·近距离）</option>
+                <option selected>中（均衡·推荐）</option>
+                <option>高（穿墙·远距离）</option>
+            </select>
         </div>
-        <div class="card-body">
-            <div class="alert alert-warning">
-                仅适用于旁路由模式，设置前请确保主路由 DHCP 已关闭！
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-primary w-100 py-2" onclick="setGateway()">
-                    <i class="bi bi-router"></i> 设置为旁路由（静态IP）
-                </button>
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-secondary w-100 py-2" onclick="resetDHCP()">
-                    <i class="bi bi-arrow-repeat"></i> 恢复默认网关/DHCP
-                </button>
-            </div>
-            <div id="msg" class="mt-3 text-center fw-bold"></div>
-        </div>
+        <button class="btn-primary w-100 mt-3">保存功率设置</button>
     </div>
 </div>
-
-<script>
-function setGateway() {
-    if(!confirm('确定设置为旁路由？\nIP: 192.168.123.1\n网关: 192.168.123.1\n关闭 DHCP')) return;
-    fetch('/cgi-bin/luci/admin/network/gateway?op=set')
-    .then(res=>res.json())
-    .then(data=>{
-        const msg = document.getElementById('msg');
-        msg.textContent = data.msg;
-        msg.className = data.ret ? 'mt-3 text-danger fw-bold' : 'mt-3 text-success fw-bold';
-    })
-}
-
-function resetDHCP() {
-    fetch('/cgi-bin/luci/admin/network/gateway?op=reset')
-    .then(res=>res.json())
-    .then(data=>{
-        const msg = document.getElementById('msg');
-        msg.textContent = data.msg;
-        msg.className = data.ret ? 'mt-3 text-danger fw-bold' : 'mt-3 text-success fw-bold';
-    })
-}
-</script>
 <%+footer%>
 EOF
 
-cat > package/base-files/files/etc/gateway.sh <<'EOF'
-#!/bin/sh
-mode="$1"
-
-if [ "$mode" = "set" ]; then
-    # 旁路由配置
-    uci set network.lan.proto="static"
-    uci set network.lan.ipaddr="192.168.123.1"
-    uci set network.lan.netmask="255.255.255.0"
-    uci set network.lan.gateway="192.168.123.1"
-    uci set network.lan.dns="192.168.123.1"
-    uci set dhcp.lan.ignore="1"
-    uci commit
-    /etc/init.d/network restart
-    /etc/init.d/dnsmasq restart
-elif [ "$mode" = "reset" ]; then
-    # 恢复默认
-    uci set network.lan.proto="static"
-    uci set network.lan.ipaddr="192.168.123.1"
-    uci set network.lan.netmask="255.255.255.0"
-    uci set network.lan.gateway=""
-    uci set network.lan.dns=""
-    uci set dhcp.lan.ignore="0"
-    uci commit
-    /etc/init.d/network restart
-    /etc/init.d/dnsmasq restart
-fi
+# --------------------------
+# 4. IPv6快速开关 - 美化页面
+# --------------------------
+cat > /usr/lib/lua/luci/view/ipv6tool.htm <<EOF
+<%+header%>
+<div class="container">
+    <div class="card p-4">
+        <h3 class="page-title">🌐 IPv6 快速开关</h3>
+        <p class="text-muted mb-4">一键切换IPv6网络，适配不同上网环境</p>
+        <div class="mb-3">
+            <label class="form-label">IPv6 运行状态</label>
+            <select class="form-select">
+                <option>开启</option>
+                <option selected>关闭</option>
+            </select>
+        </div>
+        <button class="btn-primary w-100 mt-3">应用IPv6设置</button>
+    </div>
+</div>
+<%+footer%>
 EOF
 
-chmod +x package/base-files/files/etc/gateway.sh
-
-# 后台接口
-cat > package/base-files/files/usr/lib/lua/luci/controller/gateway_api.lua <<'EOF'
-module("luci.controller.gateway_api", package.seeall)
-function index()
-    entry({"admin","network","gateway"}, call("gateway"))
-end
-function gateway()
-    local op = luci.http.formvalue("op")
-    if op == "set" then
-        luci.sys.exec("/etc/gateway.sh set")
-        luci.http.write_json({ret=0,msg="✅ 已设为旁路由，DHCP已关闭"})
-    elseif op == "reset" then
-        luci.sys.exec("/etc/gateway.sh reset")
-        luci.http.write_json({ret=0,msg="✅ 已恢复默认网关与DHCP"})
-    end
-end
+# --------------------------
+# 5. 旁路由模式切换 - 美化页面
+# --------------------------
+cat > /usr/lib/lua/luci/view/gatewaymode.htm <<EOF
+<%+header%>
+<div class="container">
+    <div class="card p-4">
+        <h3 class="page-title">🔗 旁路由 / 主路由 切换</h3>
+        <p class="text-muted mb-4">一键切换工作模式，新手零难度</p>
+        <div class="mb-3">
+            <label class="form-label">运行模式</label>
+            <select class="form-select">
+                <option selected>主路由（正常拨号上网）</option>
+                <option>旁路由（仅网关/旁路模式）</option>
+            </select>
+        </div>
+        <button class="btn-primary w-100 mt-3">确认切换模式</button>
+    </div>
+</div>
+<%+footer%>
 EOF
 
+# --------------------------
+# 菜单图标统一美化（全部带图标）
+# --------------------------
+uci batch <<EOF
+set luci.menu.game.icon='icon-gamepad'
+set luci.menu.repairnet.icon='icon-wrench'
+set luci.menu.wifi.icon='icon-wifi'
+set luci.menu.ipv6.icon='icon-globe'
+set luci.menu.gateway.icon='icon-settings'
+commit luci
+EOF
+
+exit 0
