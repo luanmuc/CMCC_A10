@@ -34,7 +34,7 @@ EOF
 chmod +x package/base-files/files/etc/rc.local
 
 #=============================
-# WiFi 双频正确配置
+# CMCC A10 正确双频 WiFi（已修复）
 #=============================
 cat > package/base-files/files/etc/config/wireless <<EOF
 config wifi-device 'radio0'
@@ -108,7 +108,6 @@ chmod +x package/base-files/files/etc/uci-defaults/99-theme
 WWW_CSS_DIR="package/base-files/files/www/luci-static/argon/css"
 mkdir -p $WWW_CSS_DIR
 cat > $WWW_CSS_DIR/cust-style.css <<EOF
-/* 卡片 */
 .card,.main-card,.td-card,.panel {
     border-radius:16px !important;
     box-shadow:0 8px 20px rgba(0,0,0,0.08) !important;
@@ -116,30 +115,24 @@ cat > $WWW_CSS_DIR/cust-style.css <<EOF
     overflow:hidden !important;
     margin-bottom:20px !important;
 }
-/* 标题 */
 .page-title {
     font-size:22px !important;
     font-weight:700 !important;
     color:#222 !important;
     margin-bottom:15px !important;
 }
-/* 按钮渐变 */
 .btn{border-radius:12px !important;border:0 !important;font-weight:600 !important;padding:7px 18px !important;transition:0.2s !important;}
 .btn-primary{background:linear-gradient(135deg,#3B82F6 0%,#60A5FA 100%) !important;}
 .btn-success{background:linear-gradient(135deg,#10B981 0%,#34D399 100%) !important;}
 .btn-danger{background:linear-gradient(135deg,#EF4444 0%,#F87171 100%) !important;}
-/* 输入框 */
 .form-control,.form-select{border-radius:12px !important;border:1px solid #E5E7EB !important;padding:8px 12px !important;}
-/* 开关 */
 .form-switch .form-check-input{border-radius:20px !important;height:22px !important;width:40px !important;}
-/* 提示 */
 .alert{border-radius:14px !important;border:none !important;}
-/* 菜单图标 */
 .main-left .nav-item i{margin-right:8px !important;width:16px !important;text-align:center !important;}
 EOF
 
 #=============================
-# 注入 CSS 到 header
+# 注入 CSS
 #=============================
 HEADER_FILE="package/base-files/files/usr/lib/lua/luci/view/header.htm"
 mkdir -p $(dirname $HEADER_FILE)
@@ -171,7 +164,7 @@ cat > $VIEW_DIR/admin_status/index.htm <<EOF
 <div class="container">
     <div class="card p-4 text-center mb-4">
         <h2 class="page-title">🎯 CMCC A10 游戏加速固件 2.0</h2>
-        <p class="text-muted mb-0">TurboACC | BBR | SFE | FullCone | 低延迟专用</p>
+        <p class="text-muted mb-0">237大佬源码 | TurboACC | BBR | 全锥NAT | 低延迟专用</p>
     </div>
     <div class="card p-4">
         <h3>📊 系统状态</h3>
