@@ -44,6 +44,7 @@ jobs:
           [ -f ../diy-part1.sh ] && cp ../diy-part1.sh .
           [ -f ../diy-part2.sh ] && cp ../diy-part2.sh .
 
+      # ✅ 修复：先进入目录再更新 feeds
       - name: Update feeds
         run: |
           cd openwrt
