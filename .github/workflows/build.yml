@@ -35,47 +35,33 @@ jobs:
           git config --global core.askpass ""
           git config --global credential.modalprompt false
 
-      # ✅ 核心替换：使用你指定的源码仓库
+      # ✅ 克隆源码
       - name: Clone immortalwrt
         run: |
           git clone --depth=1 https://github.com/zonghewang/Action-237-immortalwrt-mt798x-24.10.git openwrt
+
+      # ✅ 进入源码目录，执行所有后续操作
+      - name: Prepare and build
+        run: |
           cd openwrt
+          # 复制配置文件
           [ -f ../.config ] && cp ../.config .config
           [ -f ../diy-part1.sh ] && cp ../diy-part1.sh .
           [ -f ../diy-part2.sh ] && cp ../diy-part2.sh .
-
-      # ✅ 修复：先进入目录再更新 feeds
-      - name: Update feeds
-        run: |
-          cd openwrt
+          # 更新 feeds
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-
-      - name: Run DIY part1
-        run: |
-          cd openwrt
+          # 执行 DIY part1
           chmod +x diy-part1.sh
           ./diy-part1.sh
-
-      - name: Apply config
-        run: |
-          cd openwrt
+          # 应用配置
           make defconfig
-
-      - name: Run DIY part2
-        run: |
-          cd openwrt
+          # 执行 DIY part2
           chmod +x diy-part2.sh
           ./diy-part2.sh
-
-      - name: Download packages
-        run: |
-          cd openwrt
+          # 下载包
           make download -j$(nproc)
-
-      - name: Build firmware
-        run: |
-          cd openwrt
+          # 编译固件
           make -j$(nproc)
 
       - name: Upload to Release
