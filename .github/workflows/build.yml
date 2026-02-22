@@ -19,7 +19,7 @@ jobs:
       - name: Free up disk space
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
-          sudo docker prune -a -f
+          sudo docker system prune -a -f
 
       - name: Install dependencies
         run: |
